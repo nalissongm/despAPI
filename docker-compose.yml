@@ -1,0 +1,19 @@
+services:
+  database:
+    image: postgres
+    env_file:
+      - .env
+    container_name: despapi_db
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/data/postgres
+
+volumes:
+  pgdata:
+    driver: local
