@@ -36,7 +36,7 @@ export class LoginUseCase {
 
     const isPasswordValid = await this.hashProvider.compareHash(
       loginDto.password,
-      user.password_hash,
+      user.passwordHash,
     );
 
     if (!isPasswordValid) {
@@ -56,7 +56,7 @@ export class LoginUseCase {
     });
 
     // Hash the refresh token before storing it for security (Rotation & Revocation support)
-    user.refresh_token = await this.hashProvider.generateHash(refreshToken);
+    user.refreshToken = await this.hashProvider.generateHash(refreshToken);
     await this.userRepository.save(user);
 
     return {

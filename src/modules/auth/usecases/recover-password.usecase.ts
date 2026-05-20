@@ -36,8 +36,8 @@ export class RecoverPasswordUseCase {
     const expiresIn = new Date();
     expiresIn.setHours(expiresIn.getHours() + 2); // 2 hours expiration
 
-    user.recovery_token = recoveryToken;
-    user.recovery_token_expires_at = expiresIn;
+    user.recoveryToken = recoveryToken;
+    user.recoveryTokenExpiresAt = expiresIn;
     await this.userRepository.save(user);
 
     const appUrl = this.configService.get('APP_URL') || 'https://yourapp.com';

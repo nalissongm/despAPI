@@ -27,14 +27,15 @@ export class ResetPasswordUseCase {
     }
 
     const now = new Date();
-    if (user.recovery_token_expires_at && user.recovery_token_expires_at < now) {
+    if (user.recoveryTokenExpiresAt && user.recoveryTokenExpiresAt < now) {
       throw new BadRequestException('Recovery token has expired.');
     }
 
-    user.password_hash = await this.hashProvider.generateHash(resetPasswordDto.newPassword);
-    user.recovery_token = null;
-    user.recovery_token_expires_at = null;
+    user.passwordHash = await this.hashProvider.generateHash(resetPasswordDto.newPassword);
+    user.recoveryToken = null;
+    user.recoveryTokenExpiresAt = null;
     
     await this.userRepository.save(user);
   }
 }
+

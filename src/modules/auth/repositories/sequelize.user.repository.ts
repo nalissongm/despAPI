@@ -35,7 +35,7 @@ export class SequelizeUserRepository implements IUserRepository {
    * @returns A promise that resolves to the user model or null if not found.
    */
   async findByRecoveryToken(token: string): Promise<UserModel | null> {
-    return this.userModel.findOne({ where: { recovery_token: token } });
+    return this.userModel.findOne({ where: { recoveryToken: token } });
   }
 
   /**

@@ -25,10 +25,10 @@ export class GetMeUseCase {
     const userJson = user.toJSON();
 
     // Explicitly remove sensitive fields
-    delete userJson.password_hash;
-    delete userJson.refresh_token;
-    delete userJson.recovery_token;
-    delete userJson.recovery_token_expires_at;
+    delete userJson.passwordHash;
+    delete userJson.refreshToken;
+    delete userJson.recoveryToken;
+    delete userJson.recoveryTokenExpiresAt;
 
     return userJson;
   }

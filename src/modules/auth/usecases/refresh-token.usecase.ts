@@ -24,20 +24,20 @@ export class RefreshTokenUseCase {
   async execute(userId: string, refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.userRepository.findById(userId);
 
-    if (!user || !user.refresh_token) {
+    if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Invalid refresh token.');
     }
 
     // Verify if the provided refresh token matches the hashed one in the database
     const isTokenValid = await this.hashProvider.compareHash(
       refreshToken,
-      user.refresh_token,
+      user.refreshToken,
     );
 
     if (!isTokenValid) {
       // Security: If the token is invalid but exists in DB (not null), 
       // it might be a reuse attempt. We clear it for safety.
-      user.refresh_token = null;
+      user.refreshToken = null;
       await this.userRepository.save(user);
       throw new UnauthorizedException('Token reuse detected. Please login again.');
     }
@@ -56,7 +56,7 @@ export class RefreshTokenUseCase {
     });
 
     // Replace the old refresh token with the new hashed one (Rotation)
-    user.refresh_token = await this.hashProvider.generateHash(newRefreshToken);
+    user.refreshToken = await this.hashProvider.generateHash(newRefreshToken);
     await this.userRepository.save(user);
 
     return {

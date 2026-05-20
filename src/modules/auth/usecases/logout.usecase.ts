@@ -20,7 +20,7 @@ export class LogoutUseCase {
     const user = await this.userRepository.findById(userId);
     
     if (user) {
-      user.refresh_token = null;
+      user.refreshToken = null;
       await this.userRepository.save(user);
     }
   }

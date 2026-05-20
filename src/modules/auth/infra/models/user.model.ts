@@ -1,5 +1,3 @@
-// src/modules/auth/infra/models/user.model.ts
-
 import {
   Table,
   Column,
@@ -14,6 +12,7 @@ import { UserRole } from './enums/user-role.enum';
 @Table({
   tableName: 'users',
   timestamps: true,
+  underscored: true,
 })
 export class UserModel extends Model<UserModel> {
   @PrimaryKey
@@ -29,23 +28,73 @@ export class UserModel extends Model<UserModel> {
   email: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
-  password_hash: string;
+  @Column({
+    type: DataType.STRING,
+    field: 'password_hash',
+  })
+  passwordHash: string;
 
   @AllowNull(false)
   @Default(UserRole.STUDENT)
-  @Column(DataType.ENUM(...Object.values(UserRole)))
+  @Column({
+    type: DataType.ENUM(...Object.values(UserRole)),
+  })
   role: UserRole;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
-  refresh_token: string;
+  @Column({
+    type: DataType.STRING,
+    field: 'registration_number',
+  })
+  registrationNumber: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
-  recovery_token: string;
+  @Column({
+    type: DataType.STRING,
+    field: 'full_name',
+  })
+  fullName: string;
 
   @AllowNull(true)
-  @Column(DataType.DATE)
-  recovery_token_expires_at: Date;
+  @Column({
+    type: DataType.DATE,
+    field: 'date_of_birth',
+  })
+  dateOfBirth: Date;
+
+  @AllowNull(true)
+  @Column({
+    type: DataType.STRING(11),
+    unique: true,
+    field: 'cpf',
+  })
+  cpf: string;
+
+  @AllowNull(true)
+  @Column({
+    type: DataType.STRING,
+    field: 'avatar_url',
+  })
+  avatarUrl: string;
+
+  @AllowNull(true)
+  @Column({
+    type: DataType.STRING,
+    field: 'refresh_token',
+  })
+  refreshToken: string;
+
+  @AllowNull(true)
+  @Column({
+    type: DataType.STRING,
+    field: 'recovery_token',
+  })
+  recoveryToken: string;
+
+  @AllowNull(true)
+  @Column({
+    type: DataType.DATE,
+    field: 'recovery_token_expires_at',
+  })
+  recoveryTokenExpiresAt: Date;
 }

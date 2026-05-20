@@ -29,13 +29,13 @@ export class CreateUserUseCase {
     // Create and persist new user using the repository
     const savedUser = await this.userRepository.create({
       email,
-      password_hash: passwordHash,
+      passwordHash: passwordHash,
     });
 
     // Remove password hash from the response object
     // Since UserModel is a Sequelize model, we can use toJSON() or just avoid returning the field.
     const userResponse = savedUser.toJSON() as UserModel;
-    delete userResponse.password_hash;
+    delete userResponse.passwordHash;
 
     return userResponse;
   }
