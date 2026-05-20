@@ -27,8 +27,11 @@ export class CourseModel extends Model<CourseModel> {
 
   @ForeignKey(() => InstructorProfileModel)
   @AllowNull(false)
-  @Column(DataType.UUID)
-  instructor_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'instructor_id',
+  })
+  instructorId: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
@@ -39,8 +42,11 @@ export class CourseModel extends Model<CourseModel> {
   description: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
-  image_cover_url: string;
+  @Column({
+    type: DataType.STRING,
+    field: 'image_cover_url',
+  })
+  imageCoverUrl: string;
 
   @BelongsTo(() => InstructorProfileModel)
   instructor: InstructorProfileModel;

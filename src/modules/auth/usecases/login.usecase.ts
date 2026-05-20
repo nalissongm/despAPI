@@ -1,11 +1,11 @@
-// src/modules/auth/usecases/login.usecase.ts
-
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { Op } from 'sequelize';
+import { LoginDto } from '../dtos/login.dto';
 import { IUserRepository } from '../repositories/iuser.repository';
 import { IHashProvider } from '../../../shared/containers/hash/ihash.provider';
-import { LoginDto } from '../dtos/login.dto';
-import { ConfigService } from '@nestjs/config';
+import { UserModel } from '../infra/models/user.model';
 
 @Injectable()
 export class LoginUseCase {
@@ -14,28 +14,37 @@ export class LoginUseCase {
     private readonly userRepository: IUserRepository,
     @Inject(IHashProvider)
     private readonly hashProvider: IHashProvider,
+    @Inject('USER_MODEL')
+    private readonly userModel: typeof UserModel,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
-  /**
-   * Executes the login flow.
-   * 1. Validates user existence.
-   * 2. Compares password hash.
-   * 3. Generates Access Token (short-lived) and Refresh Token (long-lived).
-   * 4. Hashes and stores the Refresh Token in the database.
-   * @param loginDto The login credentials.
-   * @returns An object containing the access and refresh tokens.
-   */
-  async execute(loginDto: LoginDto): Promise<{ access_token: string; refresh_token: string; user: { id: string; email: string; role: string } }> {
-    const user = await this.userRepository.findByEmail(loginDto.email);
+  async execute(loginDto: LoginDto): Promise<{ 
+    access_token: string; 
+    refresh_token: string; 
+    onboarding_step: string;
+    requires_onboarding: boolean;
+    user: { id: string; email: string; role: string };
+  }> {
+    const { identifier, password } = loginDto;
+
+    // Dual login strategy: Search by email OR registration number
+    const user = await this.userModel.findOne({
+      where: {
+        [Op.or]: [
+          { email: identifier },
+          { registrationNumber: identifier },
+        ],
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
     const isPasswordValid = await this.hashProvider.compareHash(
-      loginDto.password,
+      password,
       user.passwordHash,
     );
 
@@ -44,24 +53,21 @@ export class LoginUseCase {
     }
 
     const payload = { sub: user.id, email: user.email, role: user.role };
-    
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get('JWT_SECRET'),
-      expiresIn: '15m',
-    });
 
+    const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
     });
 
-    // Hash the refresh token before storing it for security (Rotation & Revocation support)
     user.refreshToken = await this.hashProvider.generateHash(refreshToken);
-    await this.userRepository.save(user);
+    await user.save();
 
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
+      onboarding_step: user.onboardingStep,
+      requires_onboarding: user.onboardingStep !== 'COMPLETED',
       user: {
         id: user.id,
         email: user.email,

@@ -14,26 +14,26 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(data: CreateUserDto): Promise<UserModel> {
-    const { email, password } = data;
+    const { email, password, registrationNumber, fullName, dateOfBirth, cpf, avatarUrl } = data;
 
-    // Check if email is already taken
     const userExists = await this.userRepository.findByEmail(email);
 
     if (userExists) {
       throw new ConflictException('Email already in use');
     }
 
-    // Encrypt raw password
     const passwordHash = await this.hashProvider.generateHash(password);
 
-    // Create and persist new user using the repository
     const savedUser = await this.userRepository.create({
       email,
-      passwordHash: passwordHash,
+      passwordHash,
+      registrationNumber,
+      fullName,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      cpf,
+      avatarUrl,
     });
 
-    // Remove password hash from the response object
-    // Since UserModel is a Sequelize model, we can use toJSON() or just avoid returning the field.
     const userResponse = savedUser.toJSON() as UserModel;
     delete userResponse.passwordHash;
 

@@ -15,10 +15,16 @@ import { RoleModel } from './role.model';
 })
 export class UserRoleModel extends Model<UserRoleModel> {
   @ForeignKey(() => UserModel)
-  @Column(DataType.UUID)
-  user_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'user_id',
+  })
+  userId: string;
 
   @ForeignKey(() => RoleModel)
-  @Column(DataType.UUID)
-  role_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'role_id',
+  })
+  roleId: string;
 }

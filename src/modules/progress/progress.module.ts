@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { UserLessonProgressModel } from './infra/models/user-lesson-progress.model';
 
 @Module({
-  providers: [
-    {
-      provide: 'USER_LESSON_PROGRESS_REPOSITORY',
-      useValue: UserLessonProgressModel,
-    },
+  imports: [
+    SequelizeModule.forFeature([UserLessonProgressModel]),
   ],
-  exports: ['USER_LESSON_PROGRESS_REPOSITORY'],
+  providers: [],
+  exports: [SequelizeModule],
 })
 export class ProgressModule {}

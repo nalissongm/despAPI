@@ -25,13 +25,19 @@ export class EnrollmentModel extends Model<EnrollmentModel> {
 
   @ForeignKey(() => UserModel)
   @AllowNull(false)
-  @Column(DataType.UUID)
-  user_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'user_id',
+  })
+  userId: string;
 
   @ForeignKey(() => CourseModel)
   @AllowNull(false)
-  @Column(DataType.UUID)
-  course_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'course_id',
+  })
+  courseId: string;
 
   @AllowNull(false)
   @Default('active')
@@ -40,12 +46,18 @@ export class EnrollmentModel extends Model<EnrollmentModel> {
 
   @AllowNull(false)
   @Default(DataType.NOW)
-  @Column(DataType.DATE)
-  enrolled_at: Date;
+  @Column({
+    type: DataType.DATE,
+    field: 'enrolled_at',
+  })
+  enrolledAt: Date;
 
   @AllowNull(true)
-  @Column(DataType.DATE)
-  expires_at: Date;
+  @Column({
+    type: DataType.DATE,
+    field: 'expires_at',
+  })
+  expiresAt: Date;
 
   @BelongsTo(() => UserModel)
   user: UserModel;

@@ -26,8 +26,11 @@ export class InstructorProfileModel extends Model<InstructorProfileModel> {
 
   @ForeignKey(() => UserModel)
   @AllowNull(false)
-  @Column(DataType.UUID)
-  user_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'user_id',
+  })
+  userId: string;
 
   @AllowNull(true)
   @Column(DataType.TEXT)
@@ -38,16 +41,22 @@ export class InstructorProfileModel extends Model<InstructorProfileModel> {
   specialty: string;
 
   @AllowNull(true)
-  @Column(DataType.JSONB)
-  social_links: any;
+  @Column({
+    type: DataType.JSONB,
+    field: 'social_links',
+  })
+  socialLinks: any;
 
   @AllowNull(true)
   @Column(DataType.STRING(6))
   crm: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING(2))
-  crm_uf: string;
+  @Column({
+    type: DataType.STRING(2),
+    field: 'crm_uf',
+  })
+  crmUf: string;
 
   @BelongsTo(() => UserModel)
   user: UserModel;

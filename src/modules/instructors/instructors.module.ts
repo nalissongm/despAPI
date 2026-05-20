@@ -1,13 +1,17 @@
 import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { InstructorProfileModel } from './infra/models/instructor-profile.model';
+import { InstructorsController } from './infra/controllers/instructors.controller';
+import { CreateInstructorProfileUseCase } from './usecases/create-instructor-profile.usecase';
+import { RolesModule } from '../roles/roles.module';
+import { UserModel } from '../auth/infra/models/user.model';
 
 @Module({
-  providers: [
-    {
-      provide: 'INSTRUCTOR_PROFILE_REPOSITORY',
-      useValue: InstructorProfileModel,
-    },
+  imports: [
+    SequelizeModule.forFeature([InstructorProfileModel, UserModel]),
+    RolesModule,
   ],
-  exports: ['INSTRUCTOR_PROFILE_REPOSITORY'],
+  controllers: [InstructorsController],
+  providers: [CreateInstructorProfileUseCase],
 })
 export class InstructorsModule {}

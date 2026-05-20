@@ -1,18 +1,13 @@
 import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { FileModel } from './infra/models/file.model';
 import { LessonFileModel } from './infra/models/lesson-file.model';
 
 @Module({
-  providers: [
-    {
-      provide: 'FILE_REPOSITORY',
-      useValue: FileModel,
-    },
-    {
-      provide: 'LESSON_FILE_REPOSITORY',
-      useValue: LessonFileModel,
-    },
+  imports: [
+    SequelizeModule.forFeature([FileModel, LessonFileModel]),
   ],
-  exports: ['FILE_REPOSITORY', 'LESSON_FILE_REPOSITORY'],
+  providers: [],
+  exports: [SequelizeModule],
 })
 export class FilesModule {}

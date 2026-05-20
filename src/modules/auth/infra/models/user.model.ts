@@ -6,8 +6,15 @@ import {
   DataType,
   Default,
   AllowNull,
+  BelongsToMany,
+  HasOne,
+  HasMany,
 } from 'sequelize-typescript';
 import { UserRole } from './enums/user-role.enum';
+import { RoleModel } from '../../../roles/infra/models/role.model';
+import { UserRoleModel } from '../../../roles/infra/models/user-role.model';
+import { InstructorProfileModel } from '../../../instructors/infra/models/instructor-profile.model';
+import { EnrollmentModel } from '../../../enrollments/infra/models/enrollment.model';
 
 @Table({
   tableName: 'users',
@@ -20,7 +27,7 @@ export class UserModel extends Model<UserModel> {
   @Column(DataType.UUID)
   id: string;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column({
     type: DataType.STRING,
     unique: true,
@@ -44,6 +51,7 @@ export class UserModel extends Model<UserModel> {
   @AllowNull(true)
   @Column({
     type: DataType.STRING,
+    unique: true,
     field: 'registration_number',
   })
   registrationNumber: string;
@@ -77,6 +85,22 @@ export class UserModel extends Model<UserModel> {
   })
   avatarUrl: string;
 
+  @AllowNull(false)
+  @Default(false)
+  @Column({
+    type: DataType.BOOLEAN,
+    field: 'is_email_verified',
+  })
+  isEmailVerified: boolean;
+
+  @AllowNull(false)
+  @Default('COMPLETED')
+  @Column({
+    type: DataType.STRING,
+    field: 'onboarding_step',
+  })
+  onboardingStep: string;
+
   @AllowNull(true)
   @Column({
     type: DataType.STRING,
@@ -97,4 +121,13 @@ export class UserModel extends Model<UserModel> {
     field: 'recovery_token_expires_at',
   })
   recoveryTokenExpiresAt: Date;
+
+  @BelongsToMany(() => RoleModel, () => UserRoleModel)
+  roles: RoleModel[];
+
+  @HasOne(() => InstructorProfileModel)
+  instructorProfile: InstructorProfileModel;
+
+  @HasMany(() => EnrollmentModel)
+  enrollments: EnrollmentModel[];
 }
