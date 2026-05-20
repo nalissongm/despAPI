@@ -6,11 +6,13 @@ import { FindUserByIdUseCase } from '../../usecases/find-user-by-id.usecase';
 import { RegisterEmailUseCase } from '../../usecases/register-email.usecase';
 import { VerifyEmailUseCase } from '../../usecases/verify-email.usecase';
 import { CompleteProfileUseCase } from '../../usecases/complete-profile.usecase';
+import { CreateStudentUseCase } from '../../usecases/create-student.usecase';
 import { CreateUserDto } from '../../dtos/create-user.dto';
 import { UpdateUserDto } from '../../dtos/update-user.dto';
 import { RegisterEmailDto } from '../../dtos/register-email.dto';
 import { VerifyEmailDto } from '../../dtos/verify-email.dto';
 import { CompleteProfileDto } from '../../dtos/complete-profile.dto';
+import { CreateStudentDto } from '../../dtos/create-student.dto';
 import { JwtAuthGuard } from '../../../auth/infra/http/guards/jwt-auth.guard';
 
 @Controller('users')
@@ -23,12 +25,19 @@ export class UsersController {
     private readonly registerEmailUseCase: RegisterEmailUseCase,
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly completeProfileUseCase: CompleteProfileUseCase,
+    private readonly createStudentUseCase: CreateStudentUseCase,
   ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createUserDto: CreateUserDto) {
     return this.createUserUseCase.execute(createUserDto);
+  }
+
+  @Post('students')
+  @HttpCode(HttpStatus.CREATED)
+  async createStudent(@Body() createStudentDto: CreateStudentDto) {
+    return this.createStudentUseCase.execute(createStudentDto);
   }
 
   @Get(':id')
