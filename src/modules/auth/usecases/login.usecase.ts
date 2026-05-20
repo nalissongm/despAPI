@@ -6,6 +6,7 @@ import { LoginDto } from '../dtos/login.dto';
 import { IUserRepository } from '../repositories/iuser.repository';
 import { IHashProvider } from '../../../shared/containers/hash/ihash.provider';
 import { UserModel } from '../infra/models/user.model';
+import { RoleModel } from '../../roles/infra/models/role.model';
 
 @Injectable()
 export class LoginUseCase {
@@ -25,7 +26,7 @@ export class LoginUseCase {
     refresh_token: string; 
     onboarding_step: string;
     requires_onboarding: boolean;
-    user: { id: string; email: string; role: string };
+    user: { id: string; email: string; roles: string[] };
   }> {
     const { identifier, password } = loginDto;
 
@@ -37,6 +38,7 @@ export class LoginUseCase {
           { registrationNumber: identifier },
         ],
       },
+      include: [RoleModel],
     });
 
     if (!user) {
@@ -52,7 +54,9 @@ export class LoginUseCase {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const roleNames = user.roles ? user.roles.map(r => r.name) : [];
+
+    const payload = { sub: user.id, email: user.email, roles: roleNames };
 
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -71,7 +75,7 @@ export class LoginUseCase {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
+        roles: roleNames,
       },
     };
   }

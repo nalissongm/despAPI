@@ -4,7 +4,6 @@ import { InstructorProfileModel } from '../infra/models/instructor-profile.model
 import { UserModel } from '../../auth/infra/models/user.model';
 import { CreateInstructorProfileDto } from '../dtos/create-instructor-profile.dto';
 import { AssignRoleToUserUseCase } from '../../roles/usecases/assign-role-to-user.usecase';
-import { UserRole } from '../../auth/infra/models/enums/user-role.enum';
 
 @Injectable()
 export class CreateInstructorProfileUseCase {
@@ -29,13 +28,9 @@ export class CreateInstructorProfileUseCase {
 
     const profile = await this.instructorProfileModel.create(data as any);
 
-    // Automatically assign the INSTRUCTOR role
+    // Automatically assign the INSTRUCTOR role via associative table
     await this.assignRoleToUserUseCase.execute(data.userId, 'INSTRUCTOR');
     
-    // Also update the main role field in UserModel if it exists
-    user.role = UserRole.INSTRUCTOR;
-    await user.save();
-
     return profile;
   }
 }

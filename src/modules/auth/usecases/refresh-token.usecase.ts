@@ -4,6 +4,9 @@ import { IUserRepository } from '../repositories/iuser.repository';
 import { IHashProvider } from '../../../shared/containers/hash/ihash.provider';
 import { ConfigService } from '@nestjs/config';
 
+import { UserModel } from '../infra/models/user.model';
+import { RoleModel } from '../../roles/infra/models/role.model';
+
 @Injectable()
 export class RefreshTokenUseCase {
   constructor(
@@ -11,6 +14,8 @@ export class RefreshTokenUseCase {
     private readonly userRepository: IUserRepository,
     @Inject(IHashProvider)
     private readonly hashProvider: IHashProvider,
+    @Inject('USER_MODEL')
+    private readonly userModel: typeof UserModel,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -22,7 +27,9 @@ export class RefreshTokenUseCase {
    * @returns A new pair of access and refresh tokens.
    */
   async execute(userId: string, refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userModel.findByPk(userId, {
+      include: [RoleModel],
+    });
 
     if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Invalid refresh token.');
@@ -38,12 +45,14 @@ export class RefreshTokenUseCase {
       // Security: If the token is invalid but exists in DB (not null), 
       // it might be a reuse attempt. We clear it for safety.
       user.refreshToken = null;
-      await this.userRepository.save(user);
+      await this.userModel.update({ refreshToken: null }, { where: { id: userId } });
       throw new UnauthorizedException('Token reuse detected. Please login again.');
     }
 
+    const roleNames = user.roles ? user.roles.map(r => r.name) : [];
+
     // Generate new payload
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, roles: roleNames };
 
     const newAccessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_SECRET'),

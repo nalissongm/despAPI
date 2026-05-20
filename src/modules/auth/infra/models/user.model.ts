@@ -10,7 +10,6 @@ import {
   HasOne,
   HasMany,
 } from 'sequelize-typescript';
-import { UserRole } from './enums/user-role.enum';
 import { RoleModel } from '../../../roles/infra/models/role.model';
 import { UserRoleModel } from '../../../roles/infra/models/user-role.model';
 import { InstructorProfileModel } from '../../../instructors/infra/models/instructor-profile.model';
@@ -40,13 +39,6 @@ export class UserModel extends Model<UserModel> {
     field: 'password_hash',
   })
   passwordHash: string;
-
-  @AllowNull(false)
-  @Default(UserRole.STUDENT)
-  @Column({
-    type: DataType.ENUM(...Object.values(UserRole)),
-  })
-  role: UserRole;
 
   @AllowNull(true)
   @Column({
