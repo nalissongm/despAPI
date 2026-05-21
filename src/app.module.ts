@@ -24,8 +24,7 @@ import { AppController } from './app.controller';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'despapi',
       autoLoadModels: true,
-      synchronize: true,
-      sync: { force: true },
+      synchronize: true, // Be careful with this in production
       logging: false,
     }),
     AuthModule,
