@@ -14,11 +14,13 @@ jest.mock('fs', () => ({
 
 import { CoursesService } from './courses.service';
 import { CourseModel } from '../infra/models/course.model';
+import { InstructorProfileModel } from '../../instructors/infra/models/instructor-profile.model';
 import { IStorageProvider } from '../../../shared/containers/storage/istorage.provider';
 
 describe('CoursesService', () => {
   let service: CoursesService;
   let model: typeof CourseModel;
+  let instructorModel: typeof InstructorProfileModel;
   let storageProvider: IStorageProvider;
 
   const mockCourse = {
@@ -32,10 +34,18 @@ describe('CoursesService', () => {
     destroy: jest.fn(),
   };
 
+  const mockInstructor = {
+    id: 'b6b55364-77ac-4ba5-a8ea-92b0051cd119',
+  };
+
   const mockCourseModel = {
     create: jest.fn().mockResolvedValue(mockCourse),
     findAll: jest.fn().mockResolvedValue([mockCourse]),
     findByPk: jest.fn().mockResolvedValue(mockCourse),
+  };
+
+  const mockInstructorProfileModel = {
+    findByPk: jest.fn().mockResolvedValue(mockInstructor),
   };
 
   const mockStorageProvider = {
@@ -52,6 +62,10 @@ describe('CoursesService', () => {
           useValue: mockCourseModel,
         },
         {
+          provide: getModelToken(InstructorProfileModel),
+          useValue: mockInstructorProfileModel,
+        },
+        {
           provide: IStorageProvider,
           useValue: mockStorageProvider,
         },
@@ -60,28 +74,36 @@ describe('CoursesService', () => {
 
     service = module.get<CoursesService>(CoursesService);
     model = module.get<typeof CourseModel>(getModelToken(CourseModel));
+    instructorModel = module.get<typeof InstructorProfileModel>(getModelToken(InstructorProfileModel));
     storageProvider = module.get<IStorageProvider>(IStorageProvider);
 
     jest.clearAllMocks();
   });
 
   describe('CRUD Operations', () => {
-    it('should create a course', async () => {
+    it('should create a course if instructor exists', async () => {
       const dto = { instructorId: mockCourse.instructorId, title: mockCourse.title };
       const result = await service.create(dto);
+      expect(instructorModel.findByPk).toHaveBeenCalledWith(dto.instructorId);
       expect(model.create).toHaveBeenCalled();
       expect(result).toEqual(mockCourse);
     });
 
+    it('should throw NotFoundException if instructor does not exist', async () => {
+      jest.spyOn(instructorModel, 'findByPk').mockResolvedValueOnce(null);
+      const dto = { instructorId: 'invalid-id', title: 'Title' };
+      await expect(service.create(dto)).rejects.toThrow(NotFoundException);
+    });
+
     it('should find all courses with pagination', async () => {
       const result = await service.findAll(10, 0);
-      expect(model.findAll).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+      expect(model.findAll).toHaveBeenCalledWith(expect.objectContaining({ limit: 10, offset: 0 }));
       expect(result).toEqual([mockCourse]);
     });
 
     it('should find one course by id', async () => {
       const result = await service.findOne(mockCourse.id);
-      expect(model.findByPk).toHaveBeenCalledWith(mockCourse.id);
+      expect(model.findByPk).toHaveBeenCalledWith(mockCourse.id, expect.any(Object));
       expect(result).toEqual(mockCourse);
     });
 
@@ -111,7 +133,7 @@ describe('CoursesService', () => {
 
     it('Success: should upload cover, update DB, delete old cover, and unlink temp file', async () => {
       const filename = 'temp-file-123.jpg';
-      const expectedTempPath = path.resolve(__dirname, '..', '..', '..', '..', '..', 'tmp', 'uploads', filename);
+      const expectedTempPath = path.resolve(__dirname, '..', '..', '..', '..', 'tmp', 'uploads', filename);
 
       const result = await service.uploadCover(mockCourse.id, filename);
 
@@ -124,7 +146,7 @@ describe('CoursesService', () => {
 
     it('Failure/Garbage Collection: should unlink temp file EVEN IF database save fails', async () => {
       const filename = 'temp-file-fail.jpg';
-      const expectedTempPath = path.resolve(__dirname, '..', '..', '..', '..', '..', 'tmp', 'uploads', filename);
+      const expectedTempPath = path.resolve(__dirname, '..', '..', '..', '..', 'tmp', 'uploads', filename);
 
       mockCourse.save.mockRejectedValueOnce(new InternalServerErrorException('DB Crash'));
 

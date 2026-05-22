@@ -9,10 +9,11 @@ import { IStorageProvider } from '../../shared/containers/storage/istorage.provi
 import { DiskStorageProvider } from '../../shared/containers/storage/disk-storage.provider';
 import { ModulesModule } from './modules.module';
 import { LessonsModule } from './lessons.module';
+import { InstructorProfileModel } from '../instructors/infra/models/instructor-profile.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([CourseModel, CourseModuleModel, LessonModel]),
+    SequelizeModule.forFeature([CourseModel, CourseModuleModel, LessonModel, InstructorProfileModel]),
     ModulesModule,
     LessonsModule,
   ],

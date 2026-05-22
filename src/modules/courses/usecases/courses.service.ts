@@ -6,17 +6,26 @@ import { CourseModel } from '../infra/models/course.model';
 import { CreateCourseDto } from '../dtos/create-course.dto';
 import { UpdateCourseDto } from '../dtos/update-course.dto';
 import { IStorageProvider } from '../../../shared/containers/storage/istorage.provider';
+import { InstructorProfileModel } from '../../instructors/infra/models/instructor-profile.model';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectModel(CourseModel)
     private courseModel: typeof CourseModel,
+    @InjectModel(InstructorProfileModel)
+    private instructorProfileModel: typeof InstructorProfileModel,
     @Inject(IStorageProvider)
     private storageProvider: IStorageProvider,
   ) {}
 
   async create(createCourseDto: CreateCourseDto): Promise<CourseModel> {
+    const instructor = await this.instructorProfileModel.findByPk(createCourseDto.instructorId);
+
+    if (!instructor) {
+      throw new NotFoundException(`Instructor with ID ${createCourseDto.instructorId} not found`);
+    }
+
     return this.courseModel.create(createCourseDto as any);
   }
 
@@ -24,11 +33,14 @@ export class CoursesService {
     return this.courseModel.findAll({
       limit,
       offset,
+      include: [{ model: InstructorProfileModel, as: 'instructor' }],
     });
   }
 
   async findOne(id: string): Promise<CourseModel> {
-    const course = await this.courseModel.findByPk(id);
+    const course = await this.courseModel.findByPk(id, {
+      include: [{ model: InstructorProfileModel, as: 'instructor' }],
+    });
 
     if (!course) {
       throw new NotFoundException(`Course with ID ${id} not found`);
@@ -51,7 +63,8 @@ export class CoursesService {
   async uploadCover(id: string, filename: string): Promise<CourseModel> {
     const course = await this.courseModel.findByPk(id);
 
-    const tempPath = path.resolve(__dirname, '..', '..', '..', '..', '..', 'tmp', 'uploads', filename);
+    // FIX: Path was going up 5 levels, should go up 4 to reach root from src/modules/courses/usecases
+    const tempPath = path.resolve(__dirname, '..', '..', '..', '..', 'tmp', 'uploads', filename);
 
     if (!course) {
       // GARBAGE COLLECTION: Delete temp file if course not found
