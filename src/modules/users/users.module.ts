@@ -9,10 +9,13 @@ import { RegisterEmailUseCase } from './usecases/register-email.usecase';
 import { VerifyEmailUseCase } from './usecases/verify-email.usecase';
 import { CompleteProfileUseCase } from './usecases/complete-profile.usecase';
 import { CreateStudentUseCase } from './usecases/create-student.usecase';
+import { UpdateUserAvatarUseCase } from './usecases/update-user-avatar.usecase';
 import { AuthModule } from '../auth/auth.module';
 import { UserModel } from '../auth/infra/models/user.model';
 import { RoleModel } from '../roles/infra/models/role.model';
 import { UserRoleModel } from '../roles/infra/models/user-role.model';
+import { IStorageProvider } from '../../shared/containers/storage/istorage.provider';
+import { DiskStorageProvider } from '../../shared/containers/storage/disk-storage.provider';
 
 @Module({
   imports: [
@@ -29,6 +32,12 @@ import { UserRoleModel } from '../roles/infra/models/user-role.model';
     VerifyEmailUseCase,
     CompleteProfileUseCase,
     CreateStudentUseCase,
+    UpdateUserAvatarUseCase,
+
+    {
+      provide: IStorageProvider,
+      useClass: DiskStorageProvider,
+    },
 
     // Provide the expected tokens for UseCases that use @Inject('MODEL_NAME')
     {

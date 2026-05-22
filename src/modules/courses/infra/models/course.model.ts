@@ -8,11 +8,8 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-  HasMany,
 } from 'sequelize-typescript';
 import { InstructorProfileModel } from '../../../instructors/infra/models/instructor-profile.model';
-import { CourseModuleModel } from './course-module.model';
-import { EnrollmentModel } from '../../../enrollments/infra/models/enrollment.model';
 
 @Table({
   tableName: 'courses',
@@ -34,26 +31,20 @@ export class CourseModel extends Model<CourseModel> {
   instructorId: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   title: string;
 
   @AllowNull(true)
-  @Column(DataType.TEXT)
+  @Column(DataType.STRING(255))
   description: string;
 
   @AllowNull(true)
   @Column({
-    type: DataType.STRING,
-    field: 'image_cover_url',
+    type: DataType.STRING(255),
+    field: 'image_course_url',
   })
-  imageCoverUrl: string;
+  imageCourseUrl: string;
 
   @BelongsTo(() => InstructorProfileModel)
   instructor: InstructorProfileModel;
-
-  @HasMany(() => CourseModuleModel)
-  modules: CourseModuleModel[];
-
-  @HasMany(() => EnrollmentModel)
-  enrollments: EnrollmentModel[];
 }

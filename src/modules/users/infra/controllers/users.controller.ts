@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, Param, Patch, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Param, Patch, Delete, UseGuards, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateUserUseCase } from '../../usecases/create-user.usecase';
 import { UpdateUserUseCase } from '../../usecases/update-user.usecase';
 import { DeleteUserUseCase } from '../../usecases/delete-user.usecase';
@@ -7,6 +8,7 @@ import { RegisterEmailUseCase } from '../../usecases/register-email.usecase';
 import { VerifyEmailUseCase } from '../../usecases/verify-email.usecase';
 import { CompleteProfileUseCase } from '../../usecases/complete-profile.usecase';
 import { CreateStudentUseCase } from '../../usecases/create-student.usecase';
+import { UpdateUserAvatarUseCase } from '../../usecases/update-user-avatar.usecase';
 import { CreateUserDto } from '../../dtos/create-user.dto';
 import { UpdateUserDto } from '../../dtos/update-user.dto';
 import { RegisterEmailDto } from '../../dtos/register-email.dto';
@@ -14,6 +16,7 @@ import { VerifyEmailDto } from '../../dtos/verify-email.dto';
 import { CompleteProfileDto } from '../../dtos/complete-profile.dto';
 import { CreateStudentDto } from '../../dtos/create-student.dto';
 import { JwtAuthGuard } from '../../../auth/infra/http/guards/jwt-auth.guard';
+import uploadConfig from '../../../../config/upload';
 
 @Controller('users')
 export class UsersController {
@@ -26,6 +29,7 @@ export class UsersController {
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly completeProfileUseCase: CompleteProfileUseCase,
     private readonly createStudentUseCase: CreateStudentUseCase,
+    private readonly updateUserAvatarUseCase: UpdateUserAvatarUseCase,
   ) {}
 
   @Post()
@@ -75,5 +79,12 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async completeProfile(@Req() req: any, @Body() completeProfileDto: CompleteProfileDto) {
     return this.completeProfileUseCase.execute(req.user.id, completeProfileDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/avatar')
+  @UseInterceptors(FileInterceptor('avatar', uploadConfig.multer))
+  async updateAvatar(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
+    return this.updateUserAvatarUseCase.execute(req.user.id, file.filename);
   }
 }

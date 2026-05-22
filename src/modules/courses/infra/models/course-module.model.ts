@@ -26,17 +26,22 @@ export class CourseModuleModel extends Model<CourseModuleModel> {
 
   @ForeignKey(() => CourseModel)
   @AllowNull(false)
-  @Column(DataType.UUID)
-  course_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'course_id',
+  })
+  courseId: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   title: string;
 
   @AllowNull(false)
-  @Default(0)
-  @Column(DataType.INTEGER)
-  order_index: number;
+  @Column({
+    type: DataType.INTEGER,
+    field: 'order_index',
+  })
+  orderIndex: number;
 
   @BelongsTo(() => CourseModel)
   course: CourseModel;

@@ -8,13 +8,8 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-  HasMany,
-  BelongsToMany,
 } from 'sequelize-typescript';
 import { CourseModuleModel } from './course-module.model';
-import { UserLessonProgressModel } from '../../../progress/infra/models/user-lesson-progress.model';
-import { FileModel } from '../../../files/infra/models/file.model';
-import { LessonFileModel } from '../../../files/infra/models/lesson-file.model';
 
 @Table({
   tableName: 'lessons',
@@ -29,11 +24,14 @@ export class LessonModel extends Model<LessonModel> {
 
   @ForeignKey(() => CourseModuleModel)
   @AllowNull(false)
-  @Column(DataType.UUID)
-  module_id: string;
+  @Column({
+    type: DataType.UUID,
+    field: 'module_id',
+  })
+  moduleId: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   title: string;
 
   @AllowNull(true)
@@ -41,32 +39,33 @@ export class LessonModel extends Model<LessonModel> {
   description: string;
 
   @AllowNull(false)
-  @Column(DataType.ENUM('video', 'article'))
-  content_type: string;
+  @Column({
+    type: DataType.ENUM('video', 'text'),
+    field: 'content_type',
+  })
+  contentType: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
-  mux_asset_id: string;
+  @Column({
+    type: DataType.STRING(255),
+    field: 'video_url',
+  })
+  videoUrl: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
-  mux_playback_id: string;
-
-  @AllowNull(true)
-  @Column(DataType.INTEGER)
-  duration_seconds: number;
+  @Column({
+    type: DataType.INTEGER,
+    field: 'duration_seconds',
+  })
+  durationSeconds: number;
 
   @AllowNull(false)
-  @Default(0)
-  @Column(DataType.INTEGER)
-  order_index: number;
+  @Column({
+    type: DataType.INTEGER,
+    field: 'order_index',
+  })
+  orderIndex: number;
 
   @BelongsTo(() => CourseModuleModel)
   module: CourseModuleModel;
-
-  @HasMany(() => UserLessonProgressModel)
-  progress: UserLessonProgressModel[];
-
-  @BelongsToMany(() => FileModel, () => LessonFileModel)
-  files: FileModel[];
 }

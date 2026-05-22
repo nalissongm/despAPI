@@ -10,6 +10,8 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { FilesModule } from './modules/files/files.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { AppController } from './app.controller';
+import { MuxModule } from './modules/mux/mux.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { AppController } from './app.controller';
     CoursesModule,
     FilesModule,
     ProgressModule,
+    MuxModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [],
