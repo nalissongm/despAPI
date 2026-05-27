@@ -8,8 +8,10 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from 'sequelize-typescript';
 import { InstructorProfileModel } from '../../../instructors/infra/models/instructor-profile.model';
+import { EnrollmentModel } from '../../../enrollments/infra/models/enrollment.model';
 
 @Table({
   tableName: 'courses',
@@ -47,4 +49,7 @@ export class CourseModel extends Model<CourseModel> {
 
   @BelongsTo(() => InstructorProfileModel)
   instructor: InstructorProfileModel;
+
+  @HasMany(() => EnrollmentModel)
+  enrollments: EnrollmentModel[];
 }

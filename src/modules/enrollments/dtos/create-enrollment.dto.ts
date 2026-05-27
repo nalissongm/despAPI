@@ -1,11 +1,21 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsEnum, IsOptional } from 'class-validator';
+
+export enum EnrollmentStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  CANCELED = 'canceled',
+}
 
 export class CreateEnrollmentDto {
-  @IsUUID()
   @IsNotEmpty()
+  @IsUUID()
   userId: string;
 
-  @IsUUID()
   @IsNotEmpty()
+  @IsUUID()
   courseId: string;
+
+  @IsOptional()
+  @IsEnum(EnrollmentStatus)
+  status?: EnrollmentStatus;
 }

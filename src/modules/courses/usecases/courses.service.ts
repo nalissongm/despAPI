@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -29,10 +29,38 @@ export class CoursesService {
     return this.courseModel.create(createCourseDto as any);
   }
 
-  async findAll(limit: number = 10, offset: number = 0): Promise<CourseModel[]> {
+  async findAll(limit: number = 10, offset: number = 0, user?: any): Promise<CourseModel[]> {
+    const where: any = {};
+
+    if (user) {
+      const roles = user.roles || [];
+      const isAdmin = roles.some((role: any) => {
+        const roleName = typeof role === 'string' ? role : role.name;
+        return roleName.toUpperCase() === 'ADMIN';
+      });
+
+      const isInstructor = roles.some((role: any) => {
+        const roleName = typeof role === 'string' ? role : role.name;
+        return roleName.toUpperCase() === 'INSTRUCTOR';
+      });
+
+      if (isInstructor && !isAdmin) {
+        const instructorProfile = await this.instructorProfileModel.findOne({
+          where: { userId: user.id },
+        });
+        if (instructorProfile) {
+          where.instructorId = instructorProfile.id;
+        } else {
+          // If user is instructor but has no profile, they shouldn't see anything they teach
+          where.instructorId = 'none';
+        }
+      }
+    }
+
     return this.courseModel.findAll({
       limit,
       offset,
+      where,
       include: [{ model: InstructorProfileModel, as: 'instructor' }],
     });
   }
@@ -49,8 +77,11 @@ export class CoursesService {
     return course;
   }
 
-  async update(id: string, updateCourseDto: UpdateCourseDto): Promise<CourseModel> {
+  async update(id: string, updateCourseDto: UpdateCourseDto, user: any): Promise<CourseModel> {
     const course = await this.findOne(id);
+
+    await this.checkOwnership(course, user);
+
     await course.update(updateCourseDto);
     return course;
   }
@@ -60,7 +91,7 @@ export class CoursesService {
     await course.destroy(); // Hard delete as requested
   }
 
-  async uploadCover(id: string, filename: string): Promise<CourseModel> {
+  async uploadCover(id: string, filename: string, user: any): Promise<CourseModel> {
     const course = await this.courseModel.findByPk(id);
 
     // FIX: Path was going up 5 levels, should go up 4 to reach root from src/modules/courses/usecases
@@ -73,6 +104,8 @@ export class CoursesService {
       }
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
+
+    await this.checkOwnership(course, user);
 
     try {
       if (course.imageCourseUrl) {
@@ -95,6 +128,33 @@ export class CoursesService {
       // GARBAGE COLLECTION: Ensure temp file is removed after processing (if it still exists)
       if (fs.existsSync(tempPath)) {
         await fs.promises.unlink(tempPath);
+      }
+    }
+  }
+
+  private async checkOwnership(course: CourseModel, user: any): Promise<void> {
+    const roles = user.roles || [];
+    const isAdmin = roles.some((role: any) => {
+      const roleName = typeof role === 'string' ? role : role.name;
+      return roleName.toUpperCase() === 'ADMIN';
+    });
+
+    if (isAdmin) {
+      return;
+    }
+
+    const isInstructor = roles.some((role: any) => {
+      const roleName = typeof role === 'string' ? role : role.name;
+      return roleName.toUpperCase() === 'INSTRUCTOR';
+    });
+
+    if (isInstructor) {
+      const instructorProfile = await this.instructorProfileModel.findOne({
+        where: { userId: user.id },
+      });
+
+      if (!instructorProfile || course.instructorId !== instructorProfile.id) {
+        throw new ForbiddenException('You can only edit your own courses');
       }
     }
   }

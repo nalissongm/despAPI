@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
@@ -12,6 +13,7 @@ import { ProgressModule } from './modules/progress/progress.module';
 import { AppController } from './app.controller';
 import { MuxModule } from './modules/mux/mux.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { JwtAuthGuard } from './modules/auth/infra/http/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -41,6 +43,11 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     WebhooksModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

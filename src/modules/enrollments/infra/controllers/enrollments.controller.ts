@@ -1,14 +1,23 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { CreateEnrollmentUseCase } from '../../usecases/create-enrollment.usecase';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { EnrollmentsService } from '../../usecases/enrollments.service';
 import { CreateEnrollmentDto } from '../../dtos/create-enrollment.dto';
+import { JwtAuthGuard } from '../../../auth/infra/http/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/infra/http/guards/roles.guard';
+import { Roles } from '../../../auth/infra/http/decorators/roles.decorator';
 
 @Controller('enrollments')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EnrollmentsController {
-  constructor(private readonly createEnrollmentUseCase: CreateEnrollmentUseCase) {}
+  constructor(private readonly enrollmentsService: EnrollmentsService) {}
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
+  @Roles('admin', 'ADMIN') // Only admins can manually create enrollments for now
   async create(@Body() createEnrollmentDto: CreateEnrollmentDto) {
-    return this.createEnrollmentUseCase.execute(createEnrollmentDto);
+    return this.enrollmentsService.createEnrollment(createEnrollmentDto);
+  }
+
+  @Get('me')
+  async findMyEnrollments(@Req() req) {
+    return this.enrollmentsService.findByUser(req.user.id);
   }
 }

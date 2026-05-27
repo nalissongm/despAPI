@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { CoursesController } from './infra/controllers/courses.controller';
 import { CoursesService } from './usecases/courses.service';
@@ -10,12 +10,14 @@ import { DiskStorageProvider } from '../../shared/containers/storage/disk-storag
 import { ModulesModule } from './modules.module';
 import { LessonsModule } from './lessons.module';
 import { InstructorProfileModel } from '../instructors/infra/models/instructor-profile.model';
+import { EnrollmentsModule } from '../enrollments/enrollments.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([CourseModel, CourseModuleModel, LessonModel, InstructorProfileModel]),
     ModulesModule,
     LessonsModule,
+    forwardRef(() => EnrollmentsModule),
   ],
   controllers: [CoursesController],
   providers: [
@@ -25,6 +27,6 @@ import { InstructorProfileModel } from '../instructors/infra/models/instructor-p
       useClass: DiskStorageProvider,
     },
   ],
-  exports: [CoursesService, ModulesModule, LessonsModule],
+  exports: [CoursesService, ModulesModule, LessonsModule, SequelizeModule],
 })
 export class CoursesModule {}

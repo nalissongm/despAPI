@@ -20,6 +20,7 @@ import { LoginDto } from '../../dtos/login.dto';
 import { ResetPasswordDto } from '../../dtos/reset-password.dto';
 import { ResetPasswordUseCase } from '../../usecases/reset-password.usecase';
 import { GetMeUseCase } from '../../usecases/get-me.usecase';
+import { Public } from '../http/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -37,6 +38,7 @@ export class AuthController {
    * @param loginDto - The user's credentials.
    * @returns A pair of access and refresh tokens.
    */
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
@@ -61,6 +63,7 @@ export class AuthController {
    * Handles password recovery request.
    * @param body - Object containing the user's email.
    */
+  @Public()
   @Post('recover-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async recoverPassword(@Body('email') email: string) {
@@ -71,6 +74,7 @@ export class AuthController {
    * Handles password reset.
    * @param resetPasswordDto - The token and new password.
    */
+  @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
@@ -83,7 +87,6 @@ export class AuthController {
    * @param req - The incoming request object.
    */
   @Post('logout')
-  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request) {
     const user = req.user as any;
@@ -96,7 +99,6 @@ export class AuthController {
    * @returns The user profile.
    */
   @Get('me')
-  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
   async getMe(@Req() req: Request) {
     const user = req.user as any;

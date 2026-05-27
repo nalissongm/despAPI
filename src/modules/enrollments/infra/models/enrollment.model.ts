@@ -8,9 +8,11 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
+  CreatedAt,
 } from 'sequelize-typescript';
 import { UserModel } from '../../../auth/infra/models/user.model';
 import { CourseModel } from '../../../courses/infra/models/course.model';
+import { EnrollmentStatus } from '../../dtos/create-enrollment.dto';
 
 @Table({
   tableName: 'enrollments',
@@ -40,24 +42,16 @@ export class EnrollmentModel extends Model<EnrollmentModel> {
   courseId: string;
 
   @AllowNull(false)
-  @Default('active')
-  @Column(DataType.ENUM('active', 'expired', 'cancelled'))
-  status: string;
+  @Default(EnrollmentStatus.ACTIVE)
+  @Column(DataType.ENUM(...Object.values(EnrollmentStatus)))
+  status: EnrollmentStatus;
 
-  @AllowNull(false)
-  @Default(DataType.NOW)
+  @CreatedAt
   @Column({
     type: DataType.DATE,
     field: 'enrolled_at',
   })
   enrolledAt: Date;
-
-  @AllowNull(true)
-  @Column({
-    type: DataType.DATE,
-    field: 'expires_at',
-  })
-  expiresAt: Date;
 
   @BelongsTo(() => UserModel)
   user: UserModel;
